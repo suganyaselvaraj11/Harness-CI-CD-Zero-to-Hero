@@ -1,0 +1,36 @@
+pipeline:
+  name: Hello World Pipeline
+  identifier: hello_world_pipeline
+  projectIdentifier: harness_course
+  orgIdentifier: learning
+  tags: {}
+  stages:
+    - stage:
+        name: Build Hello World
+        identifier: build_hello_world
+        type: CI
+        spec:
+          cloneCodebase: true
+          infrastructure:
+            type: KubernetesDirect
+            spec:
+              connectorRef: k8s_connector
+              namespace: harness-builds
+          execution:
+            steps:
+              - step:
+                  type: Run
+                  name: Build and Run
+                  identifier: build_and_run
+                  spec:
+                    connectorRef: dockerhub_connector
+                    image: maven:3.9-eclipse-temurin-17
+                    shell: Sh
+                    command: |
+                      echo "=== Building Hello World App ==="
+                      mvn clean package -q
+                      echo ""
+                      echo "=== Running the App ==="
+                      java -jar target/hello-world-1.0.0.jar
+                      echo ""
+                      echo "=== Pipeline Success! ==="

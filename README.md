@@ -55,6 +55,7 @@ Automatic Rollback on Failure
 | 8 | Enterprise Security & Governance | 2 hrs | [Episode-08](./Episode-08/) ✅ |
 | 9 | GitOps & Observability | 2.5 hrs | [Episode-09](./Episode-09/) ✅ |
 | 10 | Complete Enterprise Project (End-to-End) | 3 hrs | [Episode-10](./Episode-10/) ✅ |
+| 11 | Bonus: Code Repo, Feature Flags, CCM & SRM | 2 hrs | [Episode-11-Bonus](./Episode-11-Bonus/) ✅ |
 
 ---
 
