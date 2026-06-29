@@ -1,49 +1,50 @@
-# Pipeline 2: Using KUBERNETES (Delegate Required)
-# Use this when: You have a K8s cluster with Harness Delegate installed
+# Pipeline 2: Using KUBERNETES (VM Pool with Delegate)
+# Use this when: You have a Delegate installed with VM pool
 pipeline:
-  name: HelloWorld-Kubernetes
-  identifier: helloworld_kubernetes
+  name: yaswanth
+  identifier: yaswanth
   projectIdentifier: default_project
   orgIdentifier: default
-  tags:
-    infra: kubernetes
-  properties:
-    ci:
-      codebase:
-        connectorRef: github_connector
-        repoName: hello-world-harness
-        build: <+input>
+  tags: {}
   stages:
     - stage:
-        name: Build Hello World
-        identifier: build_hello_world
+        name: dev
+        identifier: dev
+        description: ""
         type: CI
         spec:
           cloneCodebase: true
+          caching:
+            enabled: true
+            override: true
+          buildIntelligence:
+            enabled: true
           infrastructure:
-            type: KubernetesDirect
+            type: VM
             spec:
-              connectorRef: k8s_connector
-              namespace: harness-builds
-              automountServiceAccountToken: true
+              type: Pool
+              spec:
+                poolName: yaswanth
+                os: Linux
           execution:
             steps:
               - step:
                   type: Run
-                  name: Build and Run
-                  identifier: build_and_run
+                  name: Run_1
+                  identifier: Run_1
                   spec:
-                    connectorRef: dockerhub_connector
-                    image: maven:3.9-eclipse-temurin-17
                     shell: Sh
                     command: |
-                      echo "=== Building Hello World (Kubernetes) ==="
-                      echo "Infrastructure: Kubernetes Delegate"
-                      echo "Image: maven:3.9-eclipse-temurin-17"
-                      echo ""
+                      echo "=== Building Hello World ==="
                       mvn clean package -q
                       echo ""
                       echo "=== Running the App ==="
                       java -jar target/hello-world-1.0.0.jar
                       echo ""
                       echo "=== Pipeline Success! ==="
+  properties:
+    ci:
+      codebase:
+        connectorRef: HarnessCICDZerotoHero
+        repoName: Harness-CI-CD-Zero-to-Hero
+        build: <+input>
