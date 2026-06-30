@@ -1,25 +1,26 @@
 # Pipeline 1: Using HARNESS CLOUD (No Delegate Needed - Easiest!)
-# Use this when: You don't have a Kubernetes cluster or Delegate installed
 pipeline:
-  name: HelloWorld-HarnessCloud
-  identifier: helloworld_harness_cloud
-  projectIdentifier: default_project
+  name: yaswanth
+  identifier: yaswanth
+  projectIdentifier: Default_Project
   orgIdentifier: default
-  tags:
-    infra: harness-cloud
+  tags: {}
   properties:
     ci:
       codebase:
-        connectorRef: github_connector
-        repoName: hello-world-harness
+        connectorRef: HarnessCICDZerotoHero
+        repoName: Harness-CI-CD-Zero-to-Hero
         build: <+input>
   stages:
     - stage:
-        name: Build Hello World
-        identifier: build_hello_world
+        name: dev
+        identifier: dev
+        description: ""
         type: CI
         spec:
           cloneCodebase: true
+          caching:
+            enabled: true
           platform:
             os: Linux
             arch: Amd64
@@ -30,17 +31,11 @@ pipeline:
             steps:
               - step:
                   type: Run
-                  name: Build and Run
-                  identifier: build_and_run
+                  name: Run_1
+                  identifier: Run_1
                   spec:
                     shell: Sh
                     command: |
-                      echo "=== Building Hello World (Harness Cloud) ==="
-                      echo "Infrastructure: Harness Cloud (Free, No Delegate)"
-                      echo ""
-                      mvn clean package -q
-                      echo ""
-                      echo "=== Running the App ==="
-                      java -jar target/hello-world-1.0.0.jar
-                      echo ""
-                      echo "=== Pipeline Success! ==="
+                      echo "=== Hello from Harness CI/CD! ==="
+                      echo "Pipeline running on Harness Cloud"
+                      echo "=== Success! ==="

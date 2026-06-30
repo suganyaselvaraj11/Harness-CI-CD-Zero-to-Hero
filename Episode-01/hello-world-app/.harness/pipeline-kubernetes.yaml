@@ -2,7 +2,7 @@
 pipeline:
   name: yaswanth
   identifier: yaswanth
-  projectIdentifier: default_project
+  projectIdentifier: Default_Project
   orgIdentifier: default
   tags: {}
   stages:
