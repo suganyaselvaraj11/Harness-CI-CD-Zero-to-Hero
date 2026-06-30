@@ -1,8 +1,15 @@
-# Pipeline 1: Using HARNESS CLOUD (No Delegate Needed - Easiest!)
+# Pipeline: Using HARNESS CLOUD (No Delegate Needed!)
+# ⚠️ CHANGE THESE 4 VALUES TO MATCH YOUR HARNESS ACCOUNT:
+#   - name: any name you want
+#   - identifier: same as name (no spaces, use underscore)
+#   - projectIdentifier: YOUR project ID (find in Project Settings or URL)
+#   - orgIdentifier: YOUR org ID (usually "default")
+#   - connectorRef: YOUR GitHub connector name
+#   - repoName: YOUR GitHub repository name
 pipeline:
   name: yaswanth
   identifier: yaswanth
-  projectIdentifier: Default_Project
+  projectIdentifier: HarnessCICDZerotoHero
   orgIdentifier: default
   tags: {}
   properties:

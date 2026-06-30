@@ -2,7 +2,7 @@
 pipeline:
   name: yaswanth
   identifier: yaswanth
-  projectIdentifier: Default_Project
+  projectIdentifier: HarnessCICDZerotoHero
   orgIdentifier: default
   tags: {}
   stages:
