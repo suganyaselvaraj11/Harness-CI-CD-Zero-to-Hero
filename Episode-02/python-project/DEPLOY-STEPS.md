@@ -33,6 +33,16 @@ python-project/
 - Install and restart laptop
 - Open Docker Desktop → make sure it shows "Docker is running" (green)
 
+**Screenshots:**
+
+![Docker Hub Tokens Page](images/Screenshot%202026-07-03%20114002.png)
+
+![Generate New Token](images/Screenshot%202026-07-03%20114025.png)
+
+![Delegate Setup in Harness](images/Screenshot%202026-07-03%20114358.png)
+
+![Delegate Connected](images/Screenshot%202026-07-03%20114457.png)
+
 **Now install the Delegate:**
 
 1. Go to Harness → Project Settings → Delegates
