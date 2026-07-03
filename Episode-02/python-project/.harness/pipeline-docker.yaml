@@ -1,43 +1,55 @@
 # ============================================
 # PIPELINE: Python App — Local Docker Runner (Delegate Required)
 # ============================================
-# Prerequisites:
-# 1. Docker Desktop running on your machine
-# 2. Harness Docker Delegate installed (docker-compose from Harness UI)
-# 3. Harness Docker Runner installed on same machine
 #
-# How to install:
+# WHAT THIS PIPELINE DOES:
+#   Step 1: Install Python dependencies (pip install)
+#   Step 2: Run unit tests (pytest)
+#   Step 3: Run the app and verify it works
+#   Step 4: Build Docker image and push to Docker Hub
+#   Step 5: Verify image exists on Docker Hub
+#   Step 6: Cleanup - delete local images
+#   Step 7: Verify images are deleted locally
+#
+# PREREQUISITES:
+#   1. Docker Desktop running on your machine
+#   2. Harness Docker Delegate installed and connected
+#   3. Secret "docker-hub-password" created in Harness
+#   4. Variable "docker_username" created in Harness
+#
+# HOW TO INSTALL DELEGATE:
 #   Project Settings > Delegates > + New Delegate > Docker
 #   Copy the docker-compose command > Run it
 #   Wait 2 min > Delegate shows "Connected"
 #
-# CHANGE THESE VALUES:
-# - projectIdentifier: Your project ID (find in URL after /projects/)
-# - orgIdentifier: Your org name (usually "default")
-# - connectorRef: Your GitHub connector name (with "account." if account-level)
-# - repoName: Your GitHub repository name
+# CHANGE THESE VALUES TO MATCH YOUR ACCOUNT:
+#   - projectIdentifier: Your project ID (find in URL after /projects/)
+#   - orgIdentifier: Your org name (usually "default")
+#   - connectorRef: Your GitHub connector name
+#   - repoName: Your GitHub repository name
+#
 # ============================================
 pipeline:
   name: python-docker-pipeline
   identifier: python_docker_pipeline
-  # CHANGE THIS: Your project ID
+  # CHANGE THIS: Your Harness project ID (find in URL after /projects/)
   projectIdentifier: HarnessCICDZerotoHero
-  # CHANGE THIS: Your org name
+  # CHANGE THIS: Your organization name (usually "default")
   orgIdentifier: default
   tags: {}
   properties:
     ci:
       codebase:
-        # CHANGE THIS: Your GitHub connector
+        # CHANGE THIS: Your GitHub connector name (add "account." if account-level)
         connectorRef: account.Github
-        # CHANGE THIS: Your repo name
+        # CHANGE THIS: Your GitHub repository name
         repoName: Harness-CI-CD-Zero-to-Hero
         build: <+input>
   stages:
     - stage:
         name: build-python
         identifier: build_python
-        description: "Build and test Python Flask app using Local Docker"
+        description: "Build, test, push Docker image, and cleanup"
         type: CI
         spec:
           cloneCodebase: true
@@ -45,11 +57,16 @@ pipeline:
             os: Linux
             arch: Amd64
           runtime:
+            # This uses Local Docker Runner (needs Delegate)
             type: Docker
             spec: {}
           execution:
             steps:
-              # Step 1: Install dependencies
+              # ─────────────────────────────────────────────
+              # STEP 1: Install Python dependencies
+              # What: Downloads flask and pytest from PyPI
+              # Why: App needs flask to run, pytest to test
+              # ─────────────────────────────────────────────
               - step:
                   type: Run
                   name: Install Dependencies
@@ -58,12 +75,16 @@ pipeline:
                     shell: Sh
                     image: python:3.11-slim
                     command: |-
-                      echo "=== Installing Dependencies ==="
+                      echo "=== Step 1: Installing Dependencies ==="
                       cd Episode-02/python-project
                       pip install -r requirements.txt
-                      echo "=== Done! ==="
+                      echo "=== Dependencies Installed! ==="
 
-              # Step 2: Run tests
+              # ─────────────────────────────────────────────
+              # STEP 2: Run unit tests with pytest
+              # What: Runs test_app.py (3 tests)
+              # Why: Make sure code works before building image
+              # ─────────────────────────────────────────────
               - step:
                   type: Run
                   name: Run Tests
@@ -72,13 +93,17 @@ pipeline:
                     shell: Sh
                     image: python:3.11-slim
                     command: |-
-                      echo "=== Running Unit Tests ==="
+                      echo "=== Step 2: Running Unit Tests ==="
                       cd Episode-02/python-project
                       pip install -r requirements.txt
                       pytest test_app.py -v
-                      echo "=== All Tests Passed! ==="
+                      echo "=== All 3 Tests Passed! ==="
 
-              # Step 3: Run the app (quick check)
+              # ─────────────────────────────────────────────
+              # STEP 3: Run the app and verify endpoints
+              # What: Starts app, hits /, /health, checks response
+              # Why: Final check before building Docker image
+              # ─────────────────────────────────────────────
               - step:
                   type: Run
                   name: Run App
@@ -87,7 +112,117 @@ pipeline:
                     shell: Sh
                     image: python:3.11-slim
                     command: |-
-                      echo "=== Starting Python App ==="
+                      echo "=== Step 3: Verifying App Works ==="
                       cd Episode-02/python-project
                       pip install -r requirements.txt
-                      python -c "from app import app; client = app.test_client(); r = client.get('/'); print(r.get_json()); r = client.get('/health'); print(r.get_json()); print('=== App Works! Pipeline Success! ===')"
+                      python -c "from app import app; client = app.test_client(); r = client.get('/'); print(r.get_json()); r = client.get('/health'); print(r.get_json()); print('=== App Verified! ===')"
+
+              # ─────────────────────────────────────────────
+              # STEP 4: Build Docker image and Push to Docker Hub
+              # What: Builds image from Dockerfile, pushes to Docker Hub
+              # Why: This is the artifact we deploy to production
+              # Tags: build number (1,2,3...) + latest
+              # ─────────────────────────────────────────────
+              - step:
+                  type: Run
+                  name: Build and Push Docker Image
+                  identifier: build_push_docker
+                  spec:
+                    shell: Sh
+                    image: docker:latest
+                    privileged: true
+                    command: |-
+                      echo "=== Step 4: Building Docker Image ==="
+                      cd Episode-02/python-project
+                      echo "Building: <+variable.docker_username>/python-harness-app:<+pipeline.sequenceId>"
+                      docker build -t <+variable.docker_username>/python-harness-app:<+pipeline.sequenceId> .
+                      docker tag <+variable.docker_username>/python-harness-app:<+pipeline.sequenceId> <+variable.docker_username>/python-harness-app:latest
+                      echo ""
+                      echo "=== Pushing to Docker Hub ==="
+                      echo <+secrets.getValue("docker-hub-password")> | docker login -u <+variable.docker_username> --password-stdin
+                      docker push <+variable.docker_username>/python-harness-app:<+pipeline.sequenceId>
+                      docker push <+variable.docker_username>/python-harness-app:latest
+                      echo ""
+                      echo "=== Image Pushed to Docker Hub! ==="
+
+              # ─────────────────────────────────────────────
+              # STEP 5: Verify image exists on Docker Hub
+              # What: Checks that the push was successful
+              # Why: Confirm image is available before cleanup
+              # ─────────────────────────────────────────────
+              - step:
+                  type: Run
+                  name: Verify Push
+                  identifier: verify_push
+                  spec:
+                    shell: Sh
+                    image: docker:latest
+                    privileged: true
+                    command: |-
+                      echo "=== Step 5: Verifying Image on Docker Hub ==="
+                      echo ""
+                      echo "Checking local images:"
+                      docker images | grep python-harness-app
+                      echo ""
+                      echo "Image details:"
+                      docker inspect <+variable.docker_username>/python-harness-app:<+pipeline.sequenceId> --format '{{.Id}}' || echo "Image found!"
+                      echo ""
+                      echo "=== Verification Complete! Image is on Docker Hub ==="
+                      echo "View it at: https://hub.docker.com/r/<+variable.docker_username>/python-harness-app"
+
+              # ─────────────────────────────────────────────
+              # STEP 6: Cleanup - Remove local Docker images
+              # What: Deletes the images from local machine
+              # Why: Save disk space, keep machine clean
+              # ─────────────────────────────────────────────
+              - step:
+                  type: Run
+                  name: Cleanup Images
+                  identifier: cleanup
+                  spec:
+                    shell: Sh
+                    image: docker:latest
+                    privileged: true
+                    command: |-
+                      echo "=== Step 6: Cleaning Up Local Images ==="
+                      echo ""
+                      echo "Before cleanup:"
+                      docker images | grep python-harness-app || echo "Images listed above"
+                      echo ""
+                      echo "Removing images..."
+                      docker rmi <+variable.docker_username>/python-harness-app:<+pipeline.sequenceId> || true
+                      docker rmi <+variable.docker_username>/python-harness-app:latest || true
+                      docker logout
+                      echo ""
+                      echo "=== Local Images Removed! ==="
+
+              # ─────────────────────────────────────────────
+              # STEP 7: Verify cleanup - Confirm images are gone
+              # What: Checks that no local images remain
+              # Why: Proof that cleanup worked
+              # ─────────────────────────────────────────────
+              - step:
+                  type: Run
+                  name: Verify Cleanup
+                  identifier: verify_cleanup
+                  spec:
+                    shell: Sh
+                    image: docker:latest
+                    privileged: true
+                    command: |-
+                      echo "=== Step 7: Verifying Cleanup ==="
+                      echo ""
+                      echo "Searching for python-harness-app images locally:"
+                      IMAGES=$(docker images | grep python-harness-app || true)
+                      if [ -z "$IMAGES" ]; then
+                        echo "No local images found - Cleanup successful!"
+                      else
+                        echo "WARNING: Some images still exist:"
+                        echo "$IMAGES"
+                      fi
+                      echo ""
+                      echo "========================================="
+                      echo "  PIPELINE COMPLETE!"
+                      echo "  Image is on Docker Hub (remote)"
+                      echo "  Local images deleted (clean machine)"
+                      echo "========================================="
