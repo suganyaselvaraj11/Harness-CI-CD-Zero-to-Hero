@@ -1,6 +1,9 @@
 """
 Harness CI/CD Course - Episode 2
 Simple Python Flask App
+
+Delegate Tag Required: linux-amd64
+Docker Hub Image: <your-username>/python-harness-app
 """
 
 from flask import Flask, jsonify
@@ -14,7 +17,9 @@ def home():
         "message": "Hello from Harness CI/CD Course!",
         "episode": 2,
         "project": "Python Flask App",
-        "status": "running"
+        "status": "running",
+        "delegate_tag": "linux-amd64",
+        "infrastructure": "Local Docker Runner"
     })
 
 

@@ -37,13 +37,11 @@ python-project/
 
 ![Local Docker Delegate](./images/0.local-docker-delegate.png)
 
-![Docker Delegate Install](./images/1.Docker%20Delegate%20install.png)
+![Docker Delegate Install](./images/1.%20Docker%20Delegate%20install.png)
 
-![Enable Auto-Upgrade for Docker Delegate](./images/2..%20enable%20auto-upgrade%20for%20Docker%20Delegate.png)
+![Enable Auto-Upgrade for Docker Delegate](./images/2.%20enable%20auto-upgrade%20for%20Docker%20Delegate.png)
 
-![Delegate Docker PS](./images/3.%20Delegate%20Docker%20ps.png)
-
-![Docker Delegate Images](./images/4.%20Docker%20Delegate%20images.png)
+![Local Docker Delegate Connected](./images/4.%20local-docker-delegate.png)
 
 **Now install the Delegate:**
 
@@ -52,20 +50,38 @@ python-project/
 3. Choose **Docker**
 4. Fill in:
    - Delegate Name: `local-docker-delegate`
-   - Delegate Size: Small
-5. Harness gives you a `docker-compose.yml` file. Download it.
-6. Open terminal (Command Prompt or PowerShell) on your laptop
-7. Go to the folder where you downloaded the file:
+   - Delegate Tags: `linux-amd64` (IMPORTANT! Without this tag, pipeline won't work)
+5. Copy the `docker run` command Harness shows
+6. Before running, make sure `DELEGATE_TAGS="linux-amd64"` is in the command
+7. Open terminal (Git Bash or PowerShell) on your laptop
+8. Run the delegate command (example):
    ```
-   cd Downloads
+   docker run -d --cpus=1 --memory=2g \
+     -e DELEGATE_NAME=local-docker-delegate \
+     -e NEXT_GEN="true" \
+     -e DELEGATE_TYPE="DOCKER" \
+     -e ACCOUNT_ID=YOUR_ACCOUNT_ID \
+     -e DELEGATE_TOKEN=YOUR_TOKEN \
+     -e DELEGATE_TAGS="linux-amd64" \
+     -e MANAGER_HOST_AND_PORT=https://app.harness.io \
+     us-docker.pkg.dev/gar-prod-setup/harness-public/harness/delegate:latest
    ```
-8. Run:
+9. Run the auto-upgrade command (use `//var` for Git Bash on Windows):
    ```
-   docker compose -f docker-compose.yml up -d
+   docker run -d --cpus=0.1 --memory=100m \
+     -v //var/run/docker.sock:/var/run/docker.sock \
+     -e ACCOUNT_ID=YOUR_ACCOUNT_ID \
+     -e MANAGER_HOST_AND_PORT=https://app.harness.io \
+     -e UPGRADER_WORKLOAD_NAME=local-docker-delegate \
+     -e UPGRADER_TOKEN=YOUR_TOKEN \
+     -e CONTAINER_STOP_TIMEOUT=3600 \
+     -e SCHEDULE="0 */1 * * *" harness/upgrader:latest
    ```
-9. Wait 2-3 minutes
-10. Go back to Harness UI → Delegates page
-11. You should see: `local-docker-delegate` → Status: **Connected** ✅
+10. Wait 2-3 minutes
+11. Go back to Harness UI → Delegates page
+12. You should see: `local-docker-delegate` with tags: `local-docker-delegate, linux-amd64` → Status: **Connected** ✅
+
+**Windows Git Bash note:** Use `//var/run/docker.sock` (double slash) instead of `/var/run/docker.sock`
 
 **Verify it's running:**
 ```
