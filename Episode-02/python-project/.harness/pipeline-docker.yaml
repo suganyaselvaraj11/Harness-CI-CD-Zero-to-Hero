@@ -96,7 +96,7 @@ pipeline:
                   identifier: build_push_docker
                   spec:
                     # CHANGE THIS: Your Docker Hub connector name
-                    connectorRef: account.dockerhub
+                    connectorRef: dockerhub
                     repo: <+variable.docker_username>/python-harness-app
                     tags:
                       - <+pipeline.sequenceId>
