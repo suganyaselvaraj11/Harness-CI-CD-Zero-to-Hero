@@ -325,56 +325,88 @@ kubectl get pods -n harness-delegate-ng -w
 
 ## 🖥️ Demo: Configure All Connectors
 
-### Connector 1: GitHub
+### Connector 1: GitHub — ✅ ALREADY DONE (Episode 1)
 
-1. **Project Settings** → **Connectors** → **+ New Connector**
-2. Choose **GitHub**
+```
+You already created this in Episode 1:
+  Name: Github
+  Level: Account
+  URL: https://github.com/YOUR-USERNAME
+  Auth: Personal Access Token
+  Connectivity: Connect through Harness Platform
+  Status: ● Success ✅
+```
+
+No action needed. Just verify it still works:
+Project Settings → Connectors → click `Github` → Test → ✅
+
+---
+
+### Connector 2: Docker Hub — ✅ ALREADY DONE (Episode 2)
+
+```
+You already created this in Episode 2:
+  Name: dockerhub
+  Level: Account
+  Provider: Docker Hub
+  URL: https://index.docker.io/v2/
+  Auth: Username + secret "docker-hub-password"
+  Connectivity: Connect through Harness Platform
+  Status: ● Success ✅
+```
+
+No action needed. Just verify it still works:
+Account Settings → Connectors → click `dockerhub` → Test → ✅
+
+---
+
+### Connector 3: AWS — 🆕 CREATE NOW
+
+**You need this for Episode 7+ (EKS, ECS, ECR). Optional for now but good to set up.**
+
+1. **Account Settings** → **Connectors** → **+ New Connector**
+2. Choose **AWS**
 3. Fill in:
-   - Name: `github-connector`
-   - URL Type: Account
-   - URL: `https://github.com/YOUR-USERNAME`
+   - Name: `aws-connector`
+   - Credential Type: **AWS Access Key**
 4. Authentication:
-   - Type: Personal Access Token
-   - Username: your GitHub username
-   - Token: Create a secret with your GitHub PAT
-5. Connectivity:
-   - Connect through: Delegate
-   - Select: `my-k8s-delegate`
+   - Access Key ID: Click **+ New Secret** → name: `aws-access-key` → paste your AWS Access Key
+   - Secret Access Key: Click **+ New Secret** → name: `aws-secret-key` → paste your AWS Secret Key
+5. Connectivity: **Connect through Harness Platform**
 6. Click **Save and Continue** → **Test Connection** → ✅
 
-### Connector 2: Docker Hub
+**How to get AWS Access Keys:**
+```
+1. Go to AWS Console → IAM → Users → Your user
+2. Security credentials tab → Create access key
+3. Choose: "Command Line Interface (CLI)"
+4. Copy Access Key ID + Secret Access Key
+```
 
-1. **+ New Connector** → **Docker Registry**
-2. Fill in:
-   - Name: `dockerhub-connector`
-   - Provider: Docker Hub
-   - URL: `https://index.docker.io/v2/`
-3. Authentication:
-   - Username: your Docker Hub username
-   - Password: Create a secret with your Docker Hub token
-4. Connectivity: Through Delegate
-5. **Test Connection** → ✅
+---
 
-### Connector 3: AWS
+### Connector 4: Kubernetes — 🆕 CREATE LATER (Episode 6)
 
-1. **+ New Connector** → **AWS**
-2. Fill in:
-   - Name: `aws-connector`
-   - Credential Type: AWS Access Key
-3. Authentication:
-   - Access Key: Create secret with your AWS Access Key ID
-   - Secret Key: Create secret with your AWS Secret Access Key
-4. Connectivity: Through Delegate
-5. **Test Connection** → ✅
+```
+Not needed for Episode 3 (we use Docker Delegate, not Kubernetes).
+We create this in Episode 6 when we deploy to Kubernetes.
 
-### Connector 4: Kubernetes
+When you create it:
+  Name: k8s-connector
+  Connection Type: Inherit from Delegate (easiest)
+  Delegate: your K8s delegate
+```
 
-1. **+ New Connector** → **Kubernetes**
-2. Fill in:
-   - Name: `k8s-connector`
-   - Connection Type: Inherit from Delegate
-   - Delegate: `my-k8s-delegate`
-3. **Test Connection** → ✅
+---
+
+### Summary: What's Connected After Episode 3
+
+| Connector | Name | Created in | Status |
+|-----------|------|-----------|--------|
+| GitHub | `Github` | Episode 1 | ✅ Working |
+| Docker Hub | `dockerhub` | Episode 2 | ✅ Working |
+| AWS | `aws-connector` | Episode 3 (optional) | ✅ or skip |
+| Kubernetes | `k8s-connector` | Episode 6 (later) | ⏳ Not yet |
 
 ---
 
