@@ -390,7 +390,7 @@ OR look in URL: app.harness.io/ng/account/XXXXXXXX/...
 5. Click Next
 6. Permissions: Select **AdministratorAccess**
 7. Click Next
-8. Role name: `harness-oidc-role`
+8. Role name: `harness-openid-connect-role`
 9. Click **Create role**
 10. Copy the Role ARN: `arn:aws:iam::YOUR_ACCOUNT_ID:role/harness-oidc-role`
 
