@@ -78,11 +78,12 @@ resource "aws_instance" "bastion" {
   vpc_security_group_ids = [aws_security_group.bastion.id]
   iam_instance_profile   = aws_iam_instance_profile.bastion.name
 
-  # IMPORTANT: Don't recreate EC2 on re-apply
-  # This keeps all data, installed tools, and delegate configs safe
-  # Only destroy+apply will recreate it fresh
+  # Don't recreate EC2 when user_data changes (keeps data safe)
+  # But DO update user_data so next fresh create gets latest tools
+  user_data_replace_on_change = false
+
   lifecycle {
-    ignore_changes = [ami, user_data]
+    ignore_changes = [ami]
   }
 
   # Runs tools.sh on first boot only
