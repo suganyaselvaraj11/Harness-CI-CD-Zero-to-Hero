@@ -19,13 +19,33 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   role       = aws_iam_role.eks_cluster.name
 }
 
-# EKS Cluster (Auto Mode - manages node groups automatically)
+# Required for EKS Auto Mode - cluster role needs compute policy
+resource "aws_iam_role_policy_attachment" "eks_compute_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSComputePolicy"
+  role       = aws_iam_role.eks_cluster.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_networking_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSNetworkingPolicy"
+  role       = aws_iam_role.eks_cluster.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_block_storage_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSBlockStoragePolicy"
+  role       = aws_iam_role.eks_cluster.name
+}
+
+resource "aws_iam_role_policy_attachment" "eks_load_balancing_policy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSLoadBalancingPolicy"
+  role       = aws_iam_role.eks_cluster.name
+}
+
+# EKS Cluster (Auto Mode)
 resource "aws_eks_cluster" "main" {
   name     = var.cluster_name
   role_arn = aws_iam_role.eks_cluster.arn
   version  = var.cluster_version
 
-  # Required when EKS Auto Mode is enabled
   bootstrap_self_managed_addons = false
 
   vpc_config {
@@ -39,7 +59,7 @@ resource "aws_eks_cluster" "main" {
     endpoint_public_access  = true
   }
 
-  # Auto Mode - EKS manages compute automatically
+  # Auto Mode
   compute_config {
     enabled       = true
     node_pools    = ["general-purpose"]
@@ -64,6 +84,13 @@ resource "aws_eks_cluster" "main" {
 
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy,
+    aws_iam_role_policy_attachment.eks_compute_policy,
+    aws_iam_role_policy_attachment.eks_networking_policy,
+    aws_iam_role_policy_attachment.eks_block_storage_policy,
+    aws_iam_role_policy_attachment.eks_load_balancing_policy,
+    aws_iam_role_policy_attachment.eks_node_policy,
+    aws_iam_role_policy_attachment.eks_cni,
+    aws_iam_role_policy_attachment.eks_ecr,
   ]
 
   tags = {
@@ -87,7 +114,7 @@ resource "aws_iam_role" "eks_nodes" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "eks_worker_node" {
+resource "aws_iam_role_policy_attachment" "eks_node_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.eks_nodes.name
 }
@@ -98,6 +125,6 @@ resource "aws_iam_role_policy_attachment" "eks_cni" {
 }
 
 resource "aws_iam_role_policy_attachment" "eks_ecr" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
   role       = aws_iam_role.eks_nodes.name
 }
