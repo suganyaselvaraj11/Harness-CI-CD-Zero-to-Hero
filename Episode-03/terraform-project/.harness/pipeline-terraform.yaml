@@ -64,7 +64,8 @@ pipeline:
                   identifier: tf_init
                   spec:
                     shell: Sh
-                    connectorRef: account.aws_connector
+                    # CHANGE THIS: Your AWS connector name (find in Project Settings > Connectors)
+                    connectorRef: aws_account
                     command: |-
                       echo "=== Terraform Init (OIDC Auth) ==="
                       cd Episode-03/terraform-project
@@ -81,7 +82,8 @@ pipeline:
                   identifier: tf_plan
                   spec:
                     shell: Sh
-                    connectorRef: account.aws_connector
+                    # CHANGE THIS: Your AWS connector name
+                    connectorRef: aws_account
                     command: |-
                       echo "=== Terraform Plan (action: <+pipeline.variables.tf_action>) ==="
                       cd Episode-03/terraform-project
@@ -99,7 +101,8 @@ pipeline:
                   identifier: tf_execute
                   spec:
                     shell: Sh
-                    connectorRef: account.aws_connector
+                    # CHANGE THIS: Your AWS connector name
+                    connectorRef: aws_account
                     command: |-
                       echo "=== Terraform <+pipeline.variables.tf_action> ==="
                       cd Episode-03/terraform-project

@@ -89,7 +89,7 @@ OIDC way:   GitHub proves its identity to AWS directly (NO keys stored!)
 ### Step 4: Create S3 Bucket (Terraform State)
 
 1. AWS Console → **S3** → **Create bucket**
-2. Name: `harness-tf-state-YOUR-ACCOUNT-ID` (globally unique)
+2. Name: `harness-tf-state-harness-ci-cd-zero-to-hero` (globally unique)
 3. Region: `us-east-1`
 4. Versioning: ✅ Enable
 5. Click **Create bucket**
@@ -102,7 +102,7 @@ GitHub repo → **Settings** → **Secrets and variables** → **Actions** → *
 |----------|-------|
 | `AWS_REGION` | `us-east-1` |
 | `AWS_ROLE_ARN` | `arn:aws:iam::YOUR_ACCOUNT_ID:role/github-actions-role` |
-| `S3_BUCKET_NAME` | `harness-tf-state-YOUR-ACCOUNT-ID` |
+| `S3_BUCKET_NAME` | `harness-tf-state-harness-ci-cd-zero-to-hero` |
 
 ### Step 6: Create GitHub Environment
 
