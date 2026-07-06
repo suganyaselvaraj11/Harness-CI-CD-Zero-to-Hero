@@ -8,10 +8,10 @@ Install a Docker Delegate on AWS EC2 and run a Go CI pipeline with automatic rol
 ## What We Build
 
 ```
-AWS EC2 Instance (Ubuntu)
+AWS EC2 Instance (Amazon Linux 2023)
     ├── Docker installed
-    ├── Harness Docker Delegate (connected to Harness)
-    ├── Harness Docker Runner (runs pipeline steps)
+    ├── Harness Docker Delegate (with --network host)
+    ├── Harness Docker Runner v0.1.20 (port 3000)
     └── /tmp/harness/last-successful-tag.txt (rollback data)
 
 Pipeline (7 steps + automatic rollback):
@@ -82,10 +82,10 @@ cat /tmp/harness/last-successful-tag.txt
 
 ```bash
 chmod 400 harness-key.pem
-ssh -i harness-key.pem ubuntu@YOUR-EC2-PUBLIC-IP
+ssh -i harness-key.pem ec2-user@YOUR-EC2-PUBLIC-IP
 ```
 
-You are now inside the EC2 machine.
+You are now inside the EC2 machine. (Amazon Linux uses `ec2-user`, not `ubuntu`)
 
 ---
 
@@ -189,7 +189,7 @@ docker run -d --network host --cpus=1 --memory=2g \
 ```bash
 # Download the runner binary
 curl -L -o harness-docker-runner \
-https://github.com/harness/harness-docker-runner/releases/download/v0.1.25/harness-docker-runner-linux-amd64
+https://github.com/harness/harness-docker-runner/releases/download/v0.1.20/harness-docker-runner-linux-amd64
 
 # Make it executable
 chmod +x harness-docker-runner
@@ -199,6 +199,9 @@ sudo mv harness-docker-runner /usr/local/bin/
 
 # Verify installation
 harness-docker-runner --version
+
+# IMPORTANT: Set Docker API version (fixes "client version too new" error)
+export DOCKER_API_VERSION=1.44
 
 # Start the runner in the background
 nohup harness-docker-runner server > runner.log 2>&1 &
@@ -298,7 +301,7 @@ git push origin master
 After pipeline succeeds, SSH to EC2 and check:
 
 ```bash
-ssh -i harness-key.pem ubuntu@YOUR-EC2-IP
+ssh -i harness-key.pem ec2-user@YOUR-EC2-IP
 
 # See the last successful tag
 cat /tmp/harness/last-successful-tag.txt
@@ -397,7 +400,7 @@ Previous image 1 is still on Docker Hub as the stable version
 Location: /tmp/harness/last-successful-tag.txt
 
 To find it:
-ssh -i harness-key.pem ubuntu@YOUR-EC2-IP
+ssh -i harness-key.pem ec2-user@YOUR-EC2-IP
 cat /tmp/harness/last-successful-tag.txt
 
 Example content: 3
@@ -432,12 +435,15 @@ Episode-03/
 
 | Problem | Solution |
 |---------|----------|
-| "Failed to connect to port 3000" | Runner not running. SSH to EC2, run: `./harness-docker-runner server &` |
-| "No eligible delegates" | Check delegate has tag `linux-amd64` |
+| "Failed to connect to port 3000" | Runner not running. Kill old: `fuser -k 3000/tcp`, restart: `export DOCKER_API_VERSION=1.44 && nohup harness-docker-runner server > runner.log 2>&1 &` |
+| "client version 1.48 is too new" | Use runner v0.1.20 (not v0.1.25) AND set `export DOCKER_API_VERSION=1.44` before starting runner |
+| "No eligible delegates" | Check delegate is running: `docker ps`. Restart if needed with `--network host` |
+| "Non active delegates" | Delegate died. Restart Docker container with same command |
 | "Connector not found" | Check connector name matches exactly in YAML |
-| Rollback file not found | First run creates it. Check `/tmp/harness/` on EC2 |
+| Rollback file not found | First run creates it automatically |
 | EC2 SSH timeout | Check security group allows port 22 from your IP |
 | Docker pull fails on EC2 | Check EC2 has outbound internet (security group) |
+| curl install fails (curl-minimal conflict) | Don't install curl. `curl-minimal` is pre-installed on Amazon Linux 2023 |
 
 ---
 
