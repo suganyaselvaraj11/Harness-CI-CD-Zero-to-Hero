@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+# Don't use set -e (if one tool fails, continue installing others)
 
 echo "========================================="
 echo "  Installing tools on Bastion Server"
@@ -7,8 +7,8 @@ echo "  OS: Amazon Linux 2023"
 echo "========================================="
 
 # Update system
-dnf update -y
-dnf install -y curl unzip jq bc git docker
+dnf update -y || yum update -y
+dnf install -y curl unzip jq bc git docker || yum install -y curl unzip jq bc git docker
 
 # ----------------------------- SSM Agent (pre-installed on AL2023) ---------
 systemctl enable amazon-ssm-agent
@@ -37,16 +37,16 @@ helm version || true
 aws --version || true
 
 # ----------------------------- PostgreSQL ----------------------------------
-dnf install -y postgresql15 postgresql15-server
+dnf install -y postgresql15 postgresql15-server || yum install -y postgresql15 postgresql15-server || true
 /usr/bin/postgresql-setup --initdb || true
-systemctl enable postgresql
-systemctl start postgresql
+systemctl enable postgresql || true
+systemctl start postgresql || true
 psql --version || true
 
 # ----------------------------- MariaDB ------------------------------------
-dnf install -y mariadb105-server
-systemctl enable mariadb
-systemctl start mariadb
+dnf install -y mariadb105-server || yum install -y mariadb105-server || true
+systemctl enable mariadb || true
+systemctl start mariadb || true
 mysql --version || true
 
 # ----------------------------- Helm Repos ---------------------------------
