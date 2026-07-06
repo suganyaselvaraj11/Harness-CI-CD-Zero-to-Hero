@@ -185,3 +185,61 @@ pipeline:
                       echo ""
                       echo "  Image: <+variable.docker_username>/go-harness-app:<+pipeline.sequenceId>"
                       echo "========================================="
+
+              # Step 9: Verify success
+              - step:
+                  type: Run
+                  name: Verify Success
+                  identifier: verify_success
+                  spec:
+                    shell: Sh
+                    image: alpine:latest
+                    command: |-
+                      echo "=== Step 9: Final Verification ==="
+                      apk add --no-cache curl > /dev/null 2>&1
+                      echo "Image: <+variable.docker_username>/go-harness-app:<+pipeline.sequenceId>"
+                      echo "Image: <+variable.docker_username>/go-harness-app:latest"
+                      echo ""
+                      echo "Docker Hub: https://hub.docker.com/r/<+variable.docker_username>/go-harness-app"
+                      echo "=== All Good! ==="
+
+              # Step 10: Wait 1 minute before cleanup
+              - step:
+                  type: Run
+                  name: Wait Before Cleanup
+                  identifier: wait_cleanup
+                  spec:
+                    shell: Sh
+                    image: alpine:latest
+                    command: |-
+                      echo "=== Step 10: Waiting 1 minute before cleanup ==="
+                      sleep 60
+                      echo "=== Done waiting! ==="
+
+              # Step 11: Delete Docker Hub repository and verify
+              - step:
+                  type: Run
+                  name: Delete and Verify
+                  identifier: delete_verify
+                  spec:
+                    shell: Sh
+                    image: alpine:latest
+                    command: |-
+                      echo "=== Step 11: Deleting Docker Hub Repository ==="
+                      apk add --no-cache curl python3 > /dev/null 2>&1
+                      TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username":"<+variable.docker_username>","password":"<+secrets.getValue("docker-hub-password")>"}' https://hub.docker.com/v2/users/login/ | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+                      echo "Deleting repository: <+variable.docker_username>/go-harness-app"
+                      curl -s -X DELETE -H "Authorization: JWT $TOKEN" https://hub.docker.com/v2/repositories/<+variable.docker_username>/go-harness-app/
+                      echo ""
+                      sleep 5
+                      echo "=== Verifying Deletion ==="
+                      STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://hub.docker.com/v2/repositories/<+variable.docker_username>/go-harness-app/)
+                      if [ "$STATUS" = "404" ]; then
+                        echo "✅ Repository DELETED successfully!"
+                      else
+                        echo "⚠️ Repository may still exist (status: $STATUS)"
+                      fi
+                      echo ""
+                      echo "========================================="
+                      echo "  ALL DONE! Repository cleaned up."
+                      echo "========================================="

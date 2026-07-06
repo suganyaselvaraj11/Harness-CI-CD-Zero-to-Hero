@@ -285,14 +285,18 @@ git push origin master
 1. Click Run
 2. Branch: master
 3. Click Run Pipeline
-4. Watch 7 steps:
-   - Save Rollback Data ✅
+4. Watch 11 steps:
    - Run Tests ✅
+   - Lint Check ✅
+   - Code Coverage ✅
    - Build App ✅
    - Verify App ✅
    - Build and Push to Docker Hub ✅
-   - Update Rollback Data ✅
+   - Verify Push ✅
    - Pipeline Complete ✅
+   - Verify Success ✅
+   - Wait 1 minute ✅
+   - Delete Docker Hub Repository & Verify ✅
 
 ---
 
