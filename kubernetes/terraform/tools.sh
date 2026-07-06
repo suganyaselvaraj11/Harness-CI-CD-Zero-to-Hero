@@ -8,7 +8,7 @@ echo "========================================="
 
 # Update system
 dnf update -y || yum update -y
-dnf install -y curl unzip jq bc git docker || yum install -y curl unzip jq bc git docker
+dnf install -y unzip jq bc git docker || yum install -y unzip jq bc git docker
 
 # ----------------------------- SSM Agent (pre-installed on AL2023) ---------
 systemctl enable amazon-ssm-agent

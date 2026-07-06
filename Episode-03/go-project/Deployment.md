@@ -69,7 +69,7 @@ cat /tmp/harness/last-successful-tag.txt
 2. Go to EC2 → Launch Instance
 3. Fill in:
    - Name: `harness-delegate`
-   - OS: Ubuntu 22.04 LTS (free tier eligible)
+   - OS: Amazon Linux 2023 (free tier eligible)
    - Instance type: `t2.medium` (2 CPU, 4 GB RAM — minimum for delegate)
    - Key pair: Create new → name: `harness-key` → Download .pem file
    - Security Group: Allow SSH (port 22) from your IP
@@ -91,37 +91,82 @@ You are now inside the EC2 machine.
 
 ## Step 3: Install Docker on EC2
 
+If you're using **Amazon Linux 2023**, don't use the Ubuntu/Debian `apt` commands. Use `dnf` instead.
+
 ```bash
-sudo apt update
-sudo apt install -y docker.io
+# Update packages
+sudo dnf update -y
+
+# Install Docker
+sudo dnf install -y docker
+
+# Start Docker service
 sudo systemctl start docker
+
+# Enable Docker to start on boot
 sudo systemctl enable docker
-sudo usermod -aG docker ubuntu
-exit
-```
 
-SSH back in:
-```bash
-ssh -i harness-key.pem ubuntu@YOUR-EC2-PUBLIC-IP
-```
-
-Verify:
-```bash
+# Verify installation
 docker --version
 docker ps
 ```
 
+If you want to run Docker **without sudo**:
+
+```bash
+# Add your user to the docker group
+sudo usermod -aG docker $USER
+
+# Apply the new group membership
+newgrp docker
+
+# Test
+docker ps
+```
+
+If Docker isn't running, check its status:
+
+```bash
+sudo systemctl status docker
+```
+
+To restart Docker:
+
+```bash
+sudo systemctl restart docker
+```
+
+To verify the installation completely, run:
+
+```bash
+docker run hello-world
+```
 ---
 
 ## Step 4: Install Harness Docker Delegate on EC2
 
+**Important — When do you need what:**
+```
+CI Pipeline (build code)     → Uses Harness Cloud → No Delegate needed
+CD Pipeline (deploy to K8s)  → Uses Delegate ONLY → No Runner needed → No --network host needed
+CI with Docker Runner        → Delegate + Runner  → Needs --network host
+```
+
+```
+CD Pipeline (deploy to K8s/ECS) → Delegate ONLY → No runner needed → Works without --network host
+CI Pipeline (build code with Docker runner) → Delegate + Runner → Needs --network host
+```
+
+For this course:
+- Episode 6+ CD pipeline uses this **Docker Delegate** (no runner, no --network host)
+
 1. Go to Harness → Project Settings → Delegates → + New Delegate → Docker
 2. Set Delegate Name: `ec2-docker-delegate`
 3. Set Tags: `linux-amd64`
-4. Copy the command and run on EC2:
+4. Copy the command from Harness and run on EC2:
 
 ```bash
-docker run -d --cpus=1 --memory=2g \
+docker run -d --network host --cpus=1 --memory=2g \
   -e DELEGATE_NAME=ec2-docker-delegate \
   -e NEXT_GEN="true" \
   -e DELEGATE_TYPE="DOCKER" \
@@ -132,6 +177,8 @@ docker run -d --cpus=1 --memory=2g \
   us-docker.pkg.dev/gar-prod-setup/harness-public/harness/delegate:latest
 ```
 
+**IMPORTANT:** `--network host` is required! Without it, the delegate container cannot reach the Docker Runner on localhost:3000.
+
 5. Wait 2 minutes
 6. Check Harness UI → Delegates → `ec2-docker-delegate` → **Connected** ✅
 
@@ -141,15 +188,28 @@ docker run -d --cpus=1 --memory=2g \
 
 ```bash
 # Download the runner binary
-curl -L -o harness-docker-runner https://github.com/harness/harness-docker-runner/releases/download/v0.1.25/harness-docker-runner-linux-amd64
+curl -L -o harness-docker-runner \
+https://github.com/harness/harness-docker-runner/releases/download/v0.1.25/harness-docker-runner-linux-amd64
 
 # Make it executable
 chmod +x harness-docker-runner
 
-# Run it in background
-nohup ./harness-docker-runner server > runner.log 2>&1 &
+# (Optional) Move it to a system path
+sudo mv harness-docker-runner /usr/local/bin/
 
-# Verify it's running on port 3000
+# Verify installation
+harness-docker-runner --version
+
+# Start the runner in the background
+nohup harness-docker-runner server > runner.log 2>&1 &
+
+# Check that the process is running
+ps -ef | grep harness-docker-runner
+
+# Check whether it is listening on port 3000
+ss -lntp | grep 3000
+
+# Verify the health endpoint
 curl http://localhost:3000/healthz
 ```
 
