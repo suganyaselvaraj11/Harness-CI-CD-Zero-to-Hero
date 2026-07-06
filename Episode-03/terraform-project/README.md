@@ -67,7 +67,7 @@ VPC (10.0.0.0/16)
 
 1. Go to AWS Console → S3 → Create bucket
 2. Fill in:
-   - Bucket name: `harness-tf-state-YOUR-ACCOUNT-ID`
+   - Bucket name: `harness-terraform-project`
    - Region: `us-east-1`
    - Versioning: Enable ✅
 3. Click Create bucket

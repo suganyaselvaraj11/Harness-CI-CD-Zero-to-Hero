@@ -40,7 +40,7 @@ pipeline:
     - name: tf_action
       type: String
       description: "Choose: apply or destroy"
-      value: <+input>
+      value: <+input>.allowedValues(apply,destroy)
   stages:
     - stage:
         name: terraform
