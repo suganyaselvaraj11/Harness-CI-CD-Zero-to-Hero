@@ -154,7 +154,7 @@ pipeline:
                   identifier: push_ecr
                   spec:
                     # CHANGE THIS: Your AWS connector (OIDC)
-                    connectorRef: aws_account
+                    connectorRef: account.aws_account
                     region: us-east-1
                     account: <+variable.aws_account_id>
                     imageName: cpp-harness-app
