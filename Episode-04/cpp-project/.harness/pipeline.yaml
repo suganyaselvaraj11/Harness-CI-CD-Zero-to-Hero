@@ -296,19 +296,7 @@ pipeline:
                 spec: {}
               execution:
                 steps:
-                  # Step 1: Wait 2 minutes
-                  - step:
-                      type: Run
-                      name: Wait 2 Minutes
-                      identifier: wait_2min_dh
-                      spec:
-                        shell: Sh
-                        command: |-
-                          echo "=== Waiting 2 minutes before Docker Hub cleanup ==="
-                          sleep 120
-                          echo "=== Done waiting! ==="
-
-                  # Step 2: Delete Docker Hub repository
+                  # Step 1: Delete Docker Hub repository
                   - step:
                       type: Run
                       name: Delete Docker Hub Repo
@@ -347,19 +335,7 @@ pipeline:
                 spec: {}
               execution:
                 steps:
-                  # Step 1: Wait 2 minutes
-                  - step:
-                      type: Run
-                      name: Wait 2 Minutes
-                      identifier: wait_2min_ecr
-                      spec:
-                        shell: Sh
-                        command: |-
-                          echo "=== Waiting 2 minutes before ECR cleanup ==="
-                          sleep 120
-                          echo "=== Done waiting! ==="
-
-                  # Step 2: Delete ECR images and repository
+                  # Step 1: Delete ECR images and repository
                   - step:
                       type: Run
                       name: Delete ECR Repo
