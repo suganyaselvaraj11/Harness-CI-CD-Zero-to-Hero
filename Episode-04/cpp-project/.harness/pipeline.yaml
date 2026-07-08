@@ -245,7 +245,40 @@ pipeline:
                       echo "========================================="
 
     # ============================================
-    # STAGE 3 & 4: Delete Docker Hub + ECR (PARALLEL)
+    # STAGE 3: APPROVAL GATE (Manual approval before delete)
+    # ============================================
+    - stage:
+        name: approval-to-delete
+        identifier: approval_to_delete
+        description: "Manual approval required before deleting images"
+        type: Approval
+        spec:
+          execution:
+            steps:
+              - step:
+                  type: HarnessApproval
+                  name: Approve Cleanup
+                  identifier: approve_cleanup
+                  spec:
+                    approvalMessage: |-
+                      Images pushed successfully!
+
+                      Docker Hub: <+variable.docker_username>/cpp-harness-app:<+pipeline.variables.deploy_version>-<+pipeline.variables.environment>
+                      ECR: <+variable.aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/cpp-harness-app:<+pipeline.variables.deploy_version>-<+pipeline.variables.environment>
+
+                      Do you want to DELETE these images?
+                      Click APPROVE to delete, REJECT to keep them.
+                    includePipelineExecutionHistory: true
+                    approvers:
+                      minimumCount: 1
+                      disallowPipelineExecutor: false
+                      userGroups:
+                        - _project_all_users
+                    approverInputs: []
+                  timeout: 1d
+
+    # ============================================
+    # STAGE 4 & 5: Delete Docker Hub + ECR (PARALLEL)
     # ============================================
     - parallel:
         - stage:
