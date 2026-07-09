@@ -38,3 +38,10 @@ pipeline:
                   spec:
                     shell: Sh
                     command: echo " Build Successful "
+              - step:
+                  type: Run
+                  name: Run_2
+                  identifier: Run_2
+                  spec:
+                    shell: Sh
+                    command: echo "Run Sucess"
