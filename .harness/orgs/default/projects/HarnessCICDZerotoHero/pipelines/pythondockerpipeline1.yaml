@@ -146,3 +146,5 @@ pipeline:
                       echo "  Step 7: Image deleted from Docker Hub ✅"
                       echo "  Step 8: Deletion verified ✅"
                       echo "========================================="
+        delegateSelectors:
+          - kubernetes-delegate
