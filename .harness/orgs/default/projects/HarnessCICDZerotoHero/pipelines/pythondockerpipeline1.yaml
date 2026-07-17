@@ -18,8 +18,6 @@ pipeline:
         type: CI
         spec:
           cloneCodebase: true
-          delegateSelectors:
-            - helm-delegate
           platform:
             os: Linux
             arch: Amd64
