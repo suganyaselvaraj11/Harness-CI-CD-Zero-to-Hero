@@ -19,7 +19,7 @@ pipeline:
         spec:
           cloneCodebase: true
           delegateSelectors:
-            - minikube
+            - helm-delegate
           platform:
             os: Linux
             arch: Amd64
