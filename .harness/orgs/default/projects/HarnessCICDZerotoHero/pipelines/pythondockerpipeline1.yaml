@@ -147,4 +147,4 @@ pipeline:
                       echo "  Step 8: Deletion verified ✅"
                       echo "========================================="
         delegateSelectors:
-          - kubernetes-delegate
+          - helm-delegate
