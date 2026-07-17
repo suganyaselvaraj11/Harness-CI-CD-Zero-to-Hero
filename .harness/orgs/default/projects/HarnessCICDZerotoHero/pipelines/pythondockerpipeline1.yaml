@@ -7,7 +7,7 @@ pipeline:
   properties:
     ci:
       codebase:
-        connectorRef: account.github
+        connectorRef: account.Github
         repoName: Harness-CI-CD-Zero-to-Hero
         build: <+input>
   stages:
